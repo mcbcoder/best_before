@@ -1,51 +1,75 @@
-import 'dart:ffi';
-
-import 'package:best_before/models/recipe.api.dart';
-import 'package:best_before/views/widgets/recipe_card.dart';
 import 'package:flutter/material.dart';
-import 'package:best_before/models/recipe.dart';
-import 'package:best_before/models/recipe.api.dart';
+import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
+
+import 'package:best_before/recipePages/random10recipeList.dart';
+import 'package:best_before/recipePages/tobeusedRecipes.dart';
+import 'package:best_before/recipePages/lowCalorieRecipes.dart';
+import 'package:best_before/recipePages/vegetarianRecipes.dart';
+import 'package:best_before/recipePages/veganRecipes.dart';
+import 'package:best_before/recipePages/pescetarianRecipes.dart';
+import 'package:best_before/recipePages/glutenfreeRecipes.dart';
+import 'package:best_before/recipePages/breakfastRecipes.dart';
+import 'package:best_before/recipePages/lunchRecipes.dart';
+import 'package:best_before/recipePages/dessertRecipes.dart';
+
+
+import 'package:best_before/navBarTest/menu_item.dart';
+import 'package:best_before/navBarTest/menu_page.dart';
+
 
 
 class RecipePage extends StatefulWidget {
   @override
-  State<RecipePage> createState()=> _RecipePageState();
+  _RecipePageState createState() => _RecipePageState();
 }
 
 class _RecipePageState extends State<RecipePage> {
-
-  List<Recipe> _recipes;
-  bool _isLoading=true;
+  MenuItem currentItem = MenuItems.allRecipes;
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) => ZoomDrawer(
+        style: DrawerStyle.Style1,
+        borderRadius: 40,
+        angle: -10,
+        //slideWidth: MediaQuery.of(context).size.width * 0.8,
+        showShadow: true,
+        backgroundColor: Colors.teal,
+        mainScreen: getScreen(),
+        menuScreen: Builder(
+          builder: (context) => MenuPage(
+            currentItem: currentItem,
+            onSelectedItem: (item) {
+              setState(() => currentItem = item);
 
-    getRecipes();
+              ZoomDrawer.of(context)!.close();
+            },
+          ),
+        ),
+      );
+
+  Widget getScreen() {
+    switch (currentItem) {
+      case MenuItems.allRecipes:
+        return random10recipelist();
+      case MenuItems.touseup:
+        return tobeusedRecipe();
+      case MenuItems.lowCal:
+        return lowCalorieRecipes();
+      case MenuItems.veg:
+        return vegRecipes();
+      case MenuItems.vegan:
+        return veganRecipes();
+      case MenuItems.pescetarian:
+        return pescetarianRecipes();
+      case MenuItems.glutenFree:
+        return glutenfreeRecipes();
+      case MenuItems.breakfast:
+        return breakfastRecipes();
+      case MenuItems.lunch:
+        return lunchRecipes();
+      case MenuItems.dessert:
+      default:
+        return dessertRecipes();
+    }
   }
-
-  Future<void> getRecipes() async{
-    _recipes = await RecipeApi.getRecipe();
-    setState(() {
-    _isLoading = false;
-   });
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-   return Scaffold(
-     body: _isLoading ?   Center(child: CircularProgressIndicator())
-       :ListView.builder(
-         //itemCount: _recipes.length,
-         itemBuilder: (context,index){
-         return RecipeCard(
-            title: _recipes[index].name,
-            cookTime: _recipes[index].readyInMinutes,
-            id: _recipes[index].id,
-            thumbnailUrl:_recipes[index].images);
-            })
-          );
-
-      }
 }
